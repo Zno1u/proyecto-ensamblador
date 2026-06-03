@@ -6,8 +6,10 @@
 #include <conio.h>
 
 void imprimirMapa(int, char);
+extern int contarCaracterBuscado(char **mat, int filas, char objetivo);
 
 int main(){
+    int cnt = contarCaracterBuscado(nivelFacil, 60, 'M');
     int nivel = 1;
     bool ganado = false;
     do {
