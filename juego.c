@@ -10,7 +10,7 @@ void intercambiar(int x1, int y1, int x2, int y2, char mat[][61]);
 extern int contarCaracterBuscado(char **mat, int filas, char objetivo);
 
 int main(){
-    int cnt = contarCaracterBuscado(nivelFacil, 60, 'M');
+    int cnt = contarCaracterBuscado(lvlDif, 60, 'M');
     bool ganado = false;
     do {
         char letra = ' ';
