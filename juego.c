@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <conio.h>
 
-void imprimirMapa(int, char);
+void validarWASD(char);
+void intercambiar(int x1, int y1, int x2, int y2, char mat[][61]);
 
 int main(){
-    int nivel = 1;
     bool ganado = false;
     do {
         char letra = ' ';
@@ -17,53 +17,83 @@ int main(){
             letra = letra-32;
         }
         if (letra == 'A' || letra == 'S' || letra == 'D' || letra == 'W'){
-            imprimirMapa(nivel, letra);
+            validarWASD(letra);
         }
     } while (ganado==false);
     
 }
 
-void imprimirMapa(int nivel, char letra){
-    static int i = 20;
-    static int j = 20;
+void validarWASD(char letra){
+    system("cls");
+
+    static int filaPersonaje = 2;
+    static int columnaPersonaje = 2;
+    static int filaMapa = 20;
+    static int columnaMapa = 20;
+
     switch (letra)
     {
     case 'A':
-        if (i>20) i -= 1;
-        break;
-    case 'S':
-        if (j<60) j += 1;
-        break;
-    case 'D':
-        if (i<60) i += 1;
-        break;
-    case 'W':
-        if (j>20) j -= 1;
-        break;
-    default:
-        break;
-    }
-    // char[60][60] nivelFacil = "" 
-    switch (nivel) {
-    case 1:
-        system("cls");
-        for (int k = j-20; k<j; k++){
-            for (int l = i-20; l<i; l++){
-                printf( "%c", nivelFacil[k][l] );
-                if ( nivelFacil[k][l] == 'P' || nivelFacil[k][l] == 'D' || nivelFacil[k][l] == 'K' || nivelFacil[k][l] == 'M' ) printf(".");
-                else printf( "%c", nivelFacil[k][l] );
-            }
-            printf("\n");
+        if (columnaPersonaje > 1  && columnaMapa >= 0){
+            intercambiar(filaPersonaje, columnaPersonaje, filaPersonaje, columnaPersonaje-1, lvlDifPlayer);
+            columnaPersonaje--;
         }
         break;
-        
-    case 2:
+    case 'S':
+        if (filaPersonaje < 58  && filaMapa <= 60){
+            intercambiar(filaPersonaje, columnaPersonaje, filaPersonaje+1, columnaPersonaje, lvlDifPlayer);
+            filaPersonaje++;
+        }
         break;
-        
-    case 3:
+    case 'D':
+        if (columnaPersonaje < 58 && columnaMapa <= 60){
+            intercambiar(filaPersonaje, columnaPersonaje, filaPersonaje, columnaPersonaje+1, lvlDifPlayer);
+            columnaPersonaje++;
+        }
         break;
-        
+    case 'W':
+        if (filaPersonaje > 1  && filaMapa >= 0){
+            intercambiar(filaPersonaje, columnaPersonaje, filaPersonaje-1, columnaPersonaje, lvlDifPlayer);
+            filaPersonaje--;
+        }
+        break;
     }
 
+    for (int i = 0; i<60; i++){
+        for (int j = 0; j<60; j++){
+            printf( "%c", lvlDifPlayer[i][j] );
+            printf( "%c", lvlDifPlayer[i][j] );
+        }
+        printf("\n");
+    }
     return;
 }
+
+void intercambiar(int x1, int y1, int x2, int y2, char mat1[][61]){
+    char temp = mat1[x2][y2];
+    mat1[x2][y2] = mat1[x1][y1];
+    mat1[x1][y1] = temp;
+}
+
+// void imprimir20(int nivel, char mapa[][], int filaMapa, int columnaMapa){
+//     switch (nivel) {
+//     case 1:
+//         system("cls");
+//         for (int k = j-20; k<j; k++){
+//             for (int l = i-20; l<i; l++){
+//                 printf( "%c", mapa[k][l] );
+//                 if ( mapa[k][l] == 'P' || mapa[k][l] == 'D' || mapa[k][l] == 'K' || mapa[k][l] == 'M' ) printf(".");
+//                 else printf( "%c", mapa[k][l] );
+//             }
+//             printf("\n");
+//         }
+//         break;
+        
+//     case 2:
+//         break;
+        
+//     case 3:
+//         break;
+        
+//     }
+// }
