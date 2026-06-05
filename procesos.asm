@@ -87,12 +87,12 @@ validarMovimiento:
     cmp byte [r11], '#'
     je .movimientoInvalido
 
-    ; si no es 
+    ; si no es, retornar un 1 para q si pueda avanzar
     mov eax, 1
     jmp .salida
 
     .movimientoInvalido:
-    mov eax, 0
+    mov eax, 0 ; si si es, moverle un 0 para que no pueda avanzar
     
     .salida:
     ret
