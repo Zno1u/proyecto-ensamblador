@@ -12,12 +12,12 @@ struct Personaje {
 
 void validarWASD(char, struct Personaje);
 void intercambiar(int x1, int y1, int x2, int y2, char mat[][61]);
-int contarCaracterBuscado(char **mat, int filas, char objetivo);
-int validarMovimiento(char **mat, int filas); 
+int contarCaracterBuscado(char **mat, int columnas, int filas, char objetivo);
+int validarMovimiento(char *mat, int filas); 
 
 int main(){
     struct Personaje p = {2,2};
-    // int cnt = contarCaracterBuscado(lvlDif, 60, 'M');
+    // int cnt = contarCaracterBuscado(&lvlDif[0][0], 61, 60, 'M');
     bool ganado = false;
     do {
         char letra = ' ';

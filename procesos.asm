@@ -7,14 +7,43 @@ section .text
 ;--------------------------------------------
 ; Funcion: contarCaracterBuscado
 ; Entradas:
-;   rdi = matriz(char **)
-;   rsi = numero de filas
-;   rdx = caracter a buscar
+;   rcx = Dirección base de la matriz (&lvlDif[0][0])
+;   rdx = Número de filas (60)
+;   r8  = Número de columnas (61)
+;   r9  = Caracter a buscar ('M')
 ; Salida:
 ;   rax = total de concidencias encontradas
 ;---------------------------------------------
 
-;contarCaracteres:
+contarCaracteres:
+    ;Calcular el total de elementos (3660)
+    mov rax, rdx
+    imul rax, r8
+
+    ;Inicializamos el contador
+    xor r10, r10
+    xor r11, r11
+
+    .ciclo_lectura
+        cmp r11, rax
+        jge .fin_funcion
+
+        mov r12b, byte [rcx + rax]
+
+        cmp r12b, r9b
+        jne .siguiente
+
+        inc r10
+    
+    .siguiente
+        inc r11
+        jmp .ciclo_lectura
+
+    .fin_funcion
+        mov rax, r10
+        ret
+
+
 ;---------------------------------------------
 ;Función: detectar objeto en una celda
 ;La cuarta función obligatoria en NASM deberá detectar si en una posición específica del
