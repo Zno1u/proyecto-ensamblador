@@ -10,10 +10,10 @@ struct Personaje {
     int columnaPersonaje;
 };
 
-void validarWASD(char, struct Personaje);
-void intercambiar(int x1, int y1, int x2, int y2, char mat[][61]);
-int contarCaracterBuscado(char **mat, int filas, char objetivo);
-int validarMovimiento(char **mat, int filas); 
+void validarWASD(char, struct Personaje*);
+void intercambiar(int x1, int y1, int x2, int y2, char mat[60][60]);
+int contarCaracterBuscado(char mat[60][60], int filas, char objetivo);
+int validarMovimiento(char mat[60][60], int columnasTotales,int filas, int columnas); 
 
 int main(){
     struct Personaje p = {2,2};
@@ -26,14 +26,14 @@ int main(){
             letra = letra-32;
         }
         if (letra == 'A' || letra == 'S' || letra == 'D' || letra == 'W'){
-            validarWASD(letra, p);
+            validarWASD(letra, &p);
         }
     } while (ganado==false);
     
 }
 
 
-void validarWASD(char letra, struct Personaje p){
+void validarWASD(char letra, struct Personaje *p){
     system("cls");
 
     static int filaMapa = 20;
@@ -42,34 +42,42 @@ void validarWASD(char letra, struct Personaje p){
     switch (letra)
     {
     case 'A':
-        if (p.columnaPersonaje > 1  && columnaMapa >= 0){
-            if (validarMovimeinto(lvlDifPlayer, p.filaPersonaje, p.columnaPersonaje-1) == 1){
-                intercambiar(p.filaPersonaje, p.columnaPersonaje, p.filaPersonaje, p.columnaPersonaje-1, lvlDifPlayer);
-                p.columnaPersonaje--;
+        if (p->columnaPersonaje > 1  && columnaMapa >= 0){
+            if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1) == 1){
+                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje-1, lvlDifPlayer);
+                p->columnaPersonaje--;
+            } else {
+                printf("Invalido debug");
             }
         }
         break;
     case 'S':
-        if (p.filaPersonaje < 58  && filaMapa <= 60){
-            if (validarMovimeinto(lvlDifPlayer, p.filaPersonaje+1, p.columnaPersonaje) == 1){
-                intercambiar(p.filaPersonaje, p.columnaPersonaje, p.filaPersonaje+1, p.columnaPersonaje, lvlDifPlayer);
-                p.filaPersonaje++;
+        if (p->filaPersonaje < 58  && filaMapa <= 60){
+            if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje) == 1){
+                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje+1, p->columnaPersonaje, lvlDifPlayer);
+                p->filaPersonaje++;
+            } else {
+                printf("Invalido debug");
             }
         }
         break;
     case 'D':
-        if (p.columnaPersonaje < 58 && columnaMapa <= 60){
-            if (validarMovimeinto(lvlDifPlayer, p.filaPersonaje, p.columnaPersonaje+1) == 1){
-                intercambiar(p.filaPersonaje, p.columnaPersonaje, p.filaPersonaje, p.columnaPersonaje+1, lvlDifPlayer);
-                p.columnaPersonaje++;
+        if (p->columnaPersonaje < 58 && columnaMapa <= 60){
+            if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1) == 1){
+                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje+1, lvlDifPlayer);
+                p->columnaPersonaje++;
+            } else {
+                printf("Invalido debug");
             }
         }
         break;
     case 'W':
-        if (p.filaPersonaje > 1  && filaMapa >= 0){
-            if (validarMovimeinto(lvlDifPlayer, p.filaPersonaje-1, p.columnaPersonaje) == 1){
-                intercambiar(p.filaPersonaje, p.columnaPersonaje, p.filaPersonaje-1, p.columnaPersonaje, lvlDifPlayer);
-                p.filaPersonaje--;
+        if (p->filaPersonaje > 1  && filaMapa >= 0){
+            if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje) == 1){
+                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje-1, p->columnaPersonaje, lvlDifPlayer);
+                p->filaPersonaje--;
+            } else {
+                printf("Invalido debug");
             }
         }
         break;
@@ -85,7 +93,7 @@ void validarWASD(char letra, struct Personaje p){
     return;
 }
 
-void intercambiar(int x1, int y1, int x2, int y2, char mat1[][61]){
+void intercambiar(int x1, int y1, int x2, int y2, char mat1[60][60]){
     char temp = mat1[x2][y2];
     mat1[x2][y2] = mat1[x1][y1];
     mat1[x1][y1] = temp;
