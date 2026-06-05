@@ -92,3 +92,36 @@ contarCaracteres:
 
 
 validarMovimiento:
+    ; rcx = puntero a la matriz
+    ; edx = columnas
+    ; r8d = fila (i)
+    ; r9d = columna (j)
+    ; eax = retorno
+
+    ; base + (i * columnas + j)
+
+    imul r8d, edx  ; i * columnas
+    add r8d, r9d ; i * columnas + j 
+
+    ; cambiar r8d de 32 a 64 bits
+    movsxd rax, r8d
+
+    ; hacer la suma base + (i * columnas + j)
+    lea r11, [rcx + rax]
+
+    ; el puntero de la direccion a la que se va a mover se
+    ; guarda en r11, acceder con [] al valor
+
+    ; comparar 1 byte para ver si es un '#'
+    cmp byte [r11], '#'
+    je .movimientoInvalido
+
+    ; si no es, retornar un 1 para q si pueda avanzar
+    mov eax, 1
+    jmp .salida
+
+    .movimientoInvalido:
+    mov eax, 0 ; si si es, moverle un 0 para que no pueda avanzar
+    
+    .salida:
+    ret
