@@ -1,6 +1,6 @@
 bits 64
 default rel
-global contarCaracterBuscado, detectarObjetoCelda, validarMovimiento
+global contarCaracterBuscado, detectarObjetoCelda, validarMovimiento, contarCeldasLibres
 
 section .text
 
@@ -63,3 +63,47 @@ contarCaracteres:
 
 
 validarMovimiento:
+
+
+contarCeldasLibres:
+    ;1 rcx direccion del jugador sin aun moverse (segmento)
+    ;2 rdx numero total de celdas, retorno
+    ; r8d A-DONDE-A-MOVERSE
+
+    ;1. Moverse hasta que encuentre un #
+    ; * Saber a donde me voy a mover para ver si resto o sumo hasta encontrar #
+    ; * Si es derecha, es sumar +i
+    ; *Si es izquierda, es restar -i
+    ; * Si es arriba, es restar -j
+    ; * Si es abajo, es sumar -i
+    
+    ;Como me muevo?? base + (i · columnas + j) · tamaño
+    ;columnas estaticas: 60
+    cmp r8d,1; Izquierda
+    jmp .loopIzquierda
+    cmp r8d,2; Derecha
+    jmp .loopDerecha
+    cmp r8d,2; Arriba
+    jmp .loopArriba
+    cmp r8d,2; Abajo
+    jmp .loopAbajo
+
+    .loopIzquierda:
+         mov eax, [rcx] ;PUNTERO RCX de la matriz, valor actual de la matriz
+
+        
+
+    .loopDerecha:
+         mov eax, [rcx] ;PUNTERO RCX de la matriz, valor actual de la matriz
+          add rcx, 1 ;se avanza de 1 en 1 por que la matriz es de caracteres, aqui se mueve por columna
+        
+    .loopArriba:
+         mov eax, [rcx] ;PUNTERO RCX de la matriz, valor actual de la matriz
+
+    .loopAbajo:
+         mov eax, [rcx] ;PUNTERO RCX de la matriz, valor actual de la matriz
+    
+    
+
+
+
