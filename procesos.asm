@@ -1,4 +1,4 @@
-global contarCaracterBuscado
+global contarCaracterBuscado, validarMovimiento
 
 section .text
 
@@ -14,4 +14,6 @@ section .text
 
 
 contarCaracteres:
-    
+
+
+validarMovimiento:

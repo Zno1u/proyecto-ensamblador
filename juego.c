@@ -5,12 +5,19 @@
 #include <stdlib.h>
 #include <conio.h>
 
-void validarWASD(char);
+struct Personaje {
+    int filaPersonaje;
+    int columnaPersonaje;
+};
+
+void validarWASD(char, struct Personaje);
 void intercambiar(int x1, int y1, int x2, int y2, char mat[][61]);
-extern int contarCaracterBuscado(char **mat, int filas, char objetivo);
+int contarCaracterBuscado(char **mat, int filas, char objetivo);
+int validarMovimiento(char **mat, int filas); 
 
 int main(){
-    int cnt = contarCaracterBuscado(lvlDif, 60, 'M');
+    struct Personaje p = {2,2};
+    // int cnt = contarCaracterBuscado(lvlDif, 60, 'M');
     bool ganado = false;
     do {
         char letra = ' ';
@@ -19,44 +26,51 @@ int main(){
             letra = letra-32;
         }
         if (letra == 'A' || letra == 'S' || letra == 'D' || letra == 'W'){
-            validarWASD(letra);
+            validarWASD(letra, p);
         }
     } while (ganado==false);
     
 }
 
-void validarWASD(char letra){
+
+void validarWASD(char letra, struct Personaje p){
     system("cls");
 
-    static int filaPersonaje = 2;
-    static int columnaPersonaje = 2;
     static int filaMapa = 20;
     static int columnaMapa = 20;
 
     switch (letra)
     {
     case 'A':
-        if (columnaPersonaje > 1  && columnaMapa >= 0){
-            intercambiar(filaPersonaje, columnaPersonaje, filaPersonaje, columnaPersonaje-1, lvlDifPlayer);
-            columnaPersonaje--;
+        if (p.columnaPersonaje > 1  && columnaMapa >= 0){
+            if (validarMovimeinto(lvlDifPlayer, p.filaPersonaje, p.columnaPersonaje-1) == 1){
+                intercambiar(p.filaPersonaje, p.columnaPersonaje, p.filaPersonaje, p.columnaPersonaje-1, lvlDifPlayer);
+                p.columnaPersonaje--;
+            }
         }
         break;
     case 'S':
-        if (filaPersonaje < 58  && filaMapa <= 60){
-            intercambiar(filaPersonaje, columnaPersonaje, filaPersonaje+1, columnaPersonaje, lvlDifPlayer);
-            filaPersonaje++;
+        if (p.filaPersonaje < 58  && filaMapa <= 60){
+            if (validarMovimeinto(lvlDifPlayer, p.filaPersonaje+1, p.columnaPersonaje) == 1){
+                intercambiar(p.filaPersonaje, p.columnaPersonaje, p.filaPersonaje+1, p.columnaPersonaje, lvlDifPlayer);
+                p.filaPersonaje++;
+            }
         }
         break;
     case 'D':
-        if (columnaPersonaje < 58 && columnaMapa <= 60){
-            intercambiar(filaPersonaje, columnaPersonaje, filaPersonaje, columnaPersonaje+1, lvlDifPlayer);
-            columnaPersonaje++;
+        if (p.columnaPersonaje < 58 && columnaMapa <= 60){
+            if (validarMovimeinto(lvlDifPlayer, p.filaPersonaje, p.columnaPersonaje+1) == 1){
+                intercambiar(p.filaPersonaje, p.columnaPersonaje, p.filaPersonaje, p.columnaPersonaje+1, lvlDifPlayer);
+                p.columnaPersonaje++;
+            }
         }
         break;
     case 'W':
-        if (filaPersonaje > 1  && filaMapa >= 0){
-            intercambiar(filaPersonaje, columnaPersonaje, filaPersonaje-1, columnaPersonaje, lvlDifPlayer);
-            filaPersonaje--;
+        if (p.filaPersonaje > 1  && filaMapa >= 0){
+            if (validarMovimeinto(lvlDifPlayer, p.filaPersonaje-1, p.columnaPersonaje) == 1){
+                intercambiar(p.filaPersonaje, p.columnaPersonaje, p.filaPersonaje-1, p.columnaPersonaje, lvlDifPlayer);
+                p.filaPersonaje--;
+            }
         }
         break;
     }
