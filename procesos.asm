@@ -1,4 +1,6 @@
-global contarCaracterBuscado, validarMovimiento
+bits 64
+default rel
+global contarCaracterBuscado, detectarObjetoCelda, validarMovimiento
 
 section .text
 
@@ -14,6 +16,4 @@ section .text
 
 
 contarCaracteres:
-
-
-validarMovimiento:
+    
