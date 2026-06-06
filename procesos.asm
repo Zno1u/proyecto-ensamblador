@@ -15,33 +15,33 @@ section .text
 ;   rax = total de concidencias encontradas
 ;---------------------------------------------
 
-contarCaracteres:
-    ;Calcular el total de elementos (3660)
-    mov rax, rdx
-    imul rax, r8
+; contarCaracteres:
+;     ;Calcular el total de elementos (3660)
+;     mov rax, rdx
+;     imul rax, r8
 
-    ;Inicializamos el contador
-    xor r10, r10
-    xor r11, r11
+;     ;Inicializamos el contador
+;     xor r10, r10
+;     xor r11, r11
 
-    .ciclo_lectura
-        cmp r11, rax
-        jge .fin_funcion
+;     .ciclo_lectura:
+;         cmp r11, rax
+;         jge .fin_funcion
 
-        mov r12b, byte [rcx + rax]
+;         mov r12b, byte [rcx + rax]
 
-        cmp r12b, r9b
-        jne .siguiente
+;         cmp r12b, r9b
+;         jne .siguiente
 
-        inc r10
+;         inc r10
     
-    .siguiente
-        inc r11
-        jmp .ciclo_lectura
+;     .siguiente:
+;         inc r11
+;         jmp .ciclo_lectura
 
-    .fin_funcion
-        mov rax, r10
-        ret
+;     .fin_funcion:
+;         mov rax, r10
+;         ret
 
 
 ;---------------------------------------------

@@ -127,8 +127,8 @@ void intercambiar(int x1, int y1, int x2, int y2, char mat1[60][60]){
 // }
 
 void imprimirMapa(char mapa[60][60], struct Personaje *p){
-    //dependiendo en donde se encuentre el jugador, cambia las filas a dibujar
     // dibujar de 20 en 20 [20,40,60]
+    //dependiendo en donde se encuentre el jugador, cambia las filas a dibujar
     int filaMapa = (p->filaPersonaje < 20 ? 20 : (p->filaPersonaje < 40 ? 40 : 60));
     int columnaMapa = (p->columnaPersonaje < 20 ? 20 : (p->columnaPersonaje < 40 ? 40 : 60));
 
