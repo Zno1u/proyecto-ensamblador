@@ -7,6 +7,7 @@
 
 void imprimirMapa(int, char);
 extern int contarCaracterBuscado(char **mat, int filas, char objetivo);
+extern int calcularPuntaje(int monedas, int pasos, int nivel);
 
 int main(){
     int cnt = contarCaracterBuscado(nivelFacil, 60, 'M');
