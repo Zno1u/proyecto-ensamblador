@@ -1,19 +1,49 @@
 bits 64
-global contarCaracterBuscado, detectarObjetoCelda, calcularPuntaje
+default rel
+global contarCaracterBuscado, detectarObjetoCelda, validarMovimiento, calcularPuntaje
 
 section .text
 
 ;--------------------------------------------
 ; Funcion: contarCaracterBuscado
 ; Entradas:
-;   rdi = matriz(char **)
-;   rsi = numero de filas
-;   rdx = caracter a buscar
+;   rcx = Dirección base de la matriz (&lvlDif[0][0])
+;   rdx = Número de filas (60)
+;   r8  = Número de columnas (61)
+;   r9  = Caracter a buscar ('M')
 ; Salida:
 ;   rax = total de concidencias encontradas
 ;---------------------------------------------
 
-;contarCaracteres:
+; contarCaracteres:
+;     ;Calcular el total de elementos (3660)
+;     mov rax, rdx
+;     imul rax, r8
+
+;     ;Inicializamos el contador
+;     xor r10, r10
+;     xor r11, r11
+
+;     .ciclo_lectura:
+;         cmp r11, rax
+;         jge .fin_funcion
+
+;         mov r12b, byte [rcx + rax]
+
+;         cmp r12b, r9b
+;         jne .siguiente
+
+;         inc r10
+    
+;     .siguiente:
+;         inc r11
+;         jmp .ciclo_lectura
+
+;     .fin_funcion:
+;         mov rax, r10
+;         ret
+
+
 ;---------------------------------------------
 ;Función: detectar objeto en una celda
 ;La cuarta función obligatoria en NASM deberá detectar si en una posición específica del
@@ -75,3 +105,41 @@ detectarObjetoCelda:
 
 
     
+
+contarCaracteres:
+
+
+validarMovimiento:
+    ; rcx = puntero a la matriz
+    ; edx = columnas
+    ; r8d = fila (i)
+    ; r9d = columna (j)
+    ; eax = retorno
+
+    ; base + (i * columnas + j)
+
+    imul r8d, edx  ; i * columnas
+    add r8d, r9d ; i * columnas + j 
+
+    ; cambiar r8d de 32 a 64 bits
+    movsxd rax, r8d
+
+    ; hacer la suma base + (i * columnas + j)
+    lea r11, [rcx + rax]
+
+    ; el puntero de la direccion a la que se va a mover se
+    ; guarda en r11, acceder con [] al valor
+
+    ; comparar 1 byte para ver si es un '#'
+    cmp byte [r11], '#'
+    je .movimientoInvalido
+
+    ; si no es, retornar un 1 para q si pueda avanzar
+    mov eax, 1
+    jmp .salida
+
+    .movimientoInvalido:
+    mov eax, 0 ; si si es, moverle un 0 para que no pueda avanzar
+    
+    .salida:
+    ret
