@@ -98,39 +98,106 @@ validarMovimiento:
     ret
 
 contarCeldasLibres:
-    ;1 rcx direccion del jugador sin aun moverse (segmento)
-    ;2 rdx numero total de celdas, retorno
-    ; r8d A-DONDE-A-MOVERSE
-
-    ;1. Moverse hasta que encuentre un #
-    ; * Saber a donde me voy a mover para ver si resto o sumo hasta encontrar #
-    ; * Si es derecha, es sumar +i
-    ; *Si es izquierda, es restar -i
-    ; * Si es arriba, es restar -j
-    ; * Si es abajo, es sumar -i
+    ; rcx = puntero inicial a la matriz
+    ; edx = columnas
+    ; r8d = filas
+    ; r9d = fila (i)
+    ;[rsp+40] fila (j)
+    ;[rsp+48] a donde me voy a mover
+    ; eax = numero total de celdas, retorno
+    ; Dirección Real = Base + ((i * Total_Columnas) + j) * tamaño de la celda
     
-    ;Como me muevo?? base + (i · columnas + j) · tamaño
-    ;columnas estaticas: 60
-    cmp r8d,1; Izquierda
-    jmp .loopIzquierda
-    cmp r8d,2; Derecha
-    jmp .loopDerecha
-    cmp r8d,2; Arriba
-    jmp .loopArriba
-    cmp r8d,2; Abajo
-    jmp .loopAbajo
+    mov eax, r9d
+    imul eax, edx ; eax = i * Total_Columnas
+    add  eax, [rsp+40] ;eax = ((i * Total_Columnas) + j)
+    movsxd r10, eax ;Cambiar eax a 64 bits para despues calular posicion acutal
+    
+    ;VALORES QUE SE USAN MAS ADELANTE
+    lea r11, [rcx + r10] ;Poscicion Actual
+    mov r12d, edx ;Columnas guardadas
+    ;Verificar a donde se va a mover
+    xor edx, edx ;limpiar
+    mov edx, dword [rsp+48] ; 1 = Derecha, 2 = Izquierda, 3 = Abajo, 4 = Arriba
+    xor ecx, ecx ;Contador limpio
 
-    .loopIzquierda:
-         mov eax, [rcx] ;PUNTERO RCX de la matriz, valor actual de la matriz
+    ;CASOS SEGUN EL PARAMETRO
+    cmp edx, 1
+    je .Derecha
 
+    cmp edx, 2
+    je .Izquierda
+
+     cmp edx, 3
+    je .Abajo
+
+     cmp edx, 4
+    je .Arriba
+
+    jmp .DejarDeContar
+
+    ;ETIQUETE DERECHA
+    .Derecha:
+        ;Limite hacia la derecha de la fila del pesonaje (columnas disonibles para avanzar)
+        mov r13d, r12d ;r13 = columnas
+        sub r13d, 1    ;r13 = columnas - 1
+        sub r13d, [rsp+40] ;r13 = (columnas - 1) - j
+
+        .ContarDerecha:
+            cmp ecx, r13d ;Comprobar si llegamos a los pasos máximos (limite), ver que es r13d
+            je .DejarDeContar
+
+            cmp byte [r11 + 1], "#" ;Si hay pared en la siguiente, dejar de contar
+            je .DejarDeContar
+
+            add r11, 1
+            inc ecx ;Incrementar 1
+            jmp .ContarDerecha
+    .Izquierda:
+        ;Limite hacia la izquierdo de la fila del pesonaje (columnas disonibles para retroceder)
+        mov r13d, [rsp+40] ;r13 = j
+        .ContarIzquierda:
+            ;ecx es nuestro contador
+            cmp ecx, r13d ;Comprobar si llegamos a los pasos máximos (limite), ver que es r13d
+            je .DejarDeContar
+
+            cmp byte [r11 - 1], "#" ;Si hay pared atras, dejar de contar
+            je .DejarDeContar
+            sub r11, 1
+            inc ecx ;Incrementar 1
+            jmp .ContarIzquierda
+    .Abajo:
+        ;Limite hacia abajo de la columna del pesonaje (filas disonibles para avanzar)
+        mov r13d, r8d ;r13 = filas
+        sub r13d, 1   ;r13 = filas - 1
+        sub r13d, r9d ;r13 = (filas - 1) - i
+        movsxd rax, r12d ;numero de columnas que hay: Se convierte a 64 para calcular direccion
         
+        .ContarAbajo:
+            cmp ecx, r13d ;Comprobar si llegamos a los pasos máximos (limite), ver que es r13d
+            je .DejarDeContar
+            
+            cmp byte [r11 + rax], "#" ;Si hay pared en la siguiente, dejar de contar
+            je .DejarDeContar
 
-    .loopDerecha:
-         mov eax, [rcx] ;PUNTERO RCX de la matriz, valor actual de la matriz
-          add rcx, 1 ;se avanza de 1 en 1 por que la matriz es de caracteres, aqui se mueve por columna
-        
-    .loopArriba:
-         mov eax, [rcx] ;PUNTERO RCX de la matriz, valor actual de la matriz
+            add r11, rax
+            inc ecx ;Incrementar 1
+            jmp .ContarAbajo
+    .Arriba:    
+        ;Limite hacia arriba de la columna del pesonaje (filas disponibles para retroceder)
+        mov r13d, r9d ;r13 = i
+        movsxd rax, r12d ;numero de columnas que hay: Se convierte a 64 para calcular direccion
+        .ContarArriba:
+            cmp ecx, r13d ;Comprobar si llegamos a los pasos máximos (limite), ver que es r13d
+            je .DejarDeContar
+            
+            cmp byte [r11 - rax], "#" ;Si hay pared en la anterior, dejar de contar
+            je .DejarDeContar
 
-    .loopAbajo:
-         mov eax, [rcx] ;PUNTERO RCX de la matriz, valor actual de la matriz
+            sub r11, rax
+            inc ecx ;Incrementar 1
+            jmp .ContarArriba
+
+    .DejarDeContar:
+        mov eax, ecx
+        ret
+  
