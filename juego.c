@@ -14,10 +14,12 @@ void validarWASD(char, struct Personaje*);
 void intercambiar(int x1, int y1, int x2, int y2, char mat[60][60]);
 int contarCaracterBuscado(char mat[60][60], int filas, char objetivo);
 int validarMovimiento(char mat[60][60], int columnasTotales,int filas, int columnas); 
+void imprimirMapa(char mapa[60][60], struct Personaje *p);
+extern int calcularPuntaje(int monedas, int pasos, int nivel);
 
 int main(){
     struct Personaje p = {2,2};
-    // int cnt = contarCaracterBuscado(lvlDif, 60, 'M');
+    // int cnt = contarCaracterBuscado(&lvlDif[0][0], 61, 60, 'M');
     bool ganado = false;
     do {
         char letra = ' ';
@@ -34,21 +36,29 @@ int main(){
 
 
 void validarWASD(char letra, struct Personaje *p){
-    system("cls");
-
+    bool movimiento = false; 
+    // cambiar movimiento en true al hacer un movimiento valido para q cuando haya uno invalido no
+    // se redibuje el mapa de nuevo
+    
     static int filaMapa = 20;
     static int columnaMapa = 20;
 
     switch (letra)
     {
+    // validar movimientos dependiendo del caso
+    // A - columnaPersonaje-1 (moverse izq)
+    // S - filaPersonaje+1 (moverse abajo)
+    // D - columnaPersonaje+1 (moverse derecha)
+    // W - filaPersonaje-1 (moverse arriba)
+    // dsps de validar que sea valido, hacer el movimiento en el mapa correspondiente,
+    // actualizar valores y cambiar flag.
     case 'A':
         if (p->columnaPersonaje > 1  && columnaMapa >= 0){
             if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1) == 1){
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje-1, lvlDifPlayer);
                 p->columnaPersonaje--;
-            } else {
-                printf("Invalido debug");
-            }
+                movimiento = true;
+            } 
         }
         break;
     case 'S':
@@ -56,9 +66,8 @@ void validarWASD(char letra, struct Personaje *p){
             if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje) == 1){
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje+1, p->columnaPersonaje, lvlDifPlayer);
                 p->filaPersonaje++;
-            } else {
-                printf("Invalido debug");
-            }
+                movimiento = true;
+            } 
         }
         break;
     case 'D':
@@ -66,9 +75,8 @@ void validarWASD(char letra, struct Personaje *p){
             if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1) == 1){
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje+1, lvlDifPlayer);
                 p->columnaPersonaje++;
-            } else {
-                printf("Invalido debug");
-            }
+                movimiento = true;
+            } 
         }
         break;
     case 'W':
@@ -76,20 +84,17 @@ void validarWASD(char letra, struct Personaje *p){
             if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje) == 1){
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje-1, p->columnaPersonaje, lvlDifPlayer);
                 p->filaPersonaje--;
-            } else {
-                printf("Invalido debug");
-            }
+                movimiento = true;
+            } 
         }
         break;
     }
 
-    for (int i = 0; i<60; i++){
-        for (int j = 0; j<60; j++){
-            printf( "%c", lvlDifPlayer[i][j] );
-            printf( "%c", lvlDifPlayer[i][j] );
-        }
-        printf("\n");
+    if (movimiento){
+        system("cls"); // limpiarr pantalla sol osi hay movimientos nuevos
+        imprimirMapa(lvlDifPlayer, p);
     }
+
     return;
 }
 
@@ -121,3 +126,25 @@ void intercambiar(int x1, int y1, int x2, int y2, char mat1[60][60]){
         
 //     }
 // }
+
+void imprimirMapa(char mapa[60][60], struct Personaje *p){
+    // dibujar de 20 en 20 [20,40,60]
+    //dependiendo en donde se encuentre el jugador, cambia las filas a dibujar
+    int filaMapa = (p->filaPersonaje < 20 ? 20 : (p->filaPersonaje < 40 ? 40 : 60));
+    int columnaMapa = (p->columnaPersonaje < 20 ? 20 : (p->columnaPersonaje < 40 ? 40 : 60));
+
+    // test para dibujar de 10 en 10 [20,30,40,50,60]
+    // int filaMapa = (p->filaPersonaje < 20 ? 20 : (p->filaPersonaje < 30 ? 30 : (p->filaPersonaje < 40 ? 40 : (p->filaPersonaje < 50 ? 50 : 60))));
+    // int columnaMapa = (p->columnaPersonaje < 20 ? 20 : (p->columnaPersonaje < 30 ? 30 : (p->columnaPersonaje < 40 ? 40 : (p->columnaPersonaje < 50 ? 50 : 60))));
+
+
+    for (int i = filaMapa - 20; i < filaMapa; i++){
+        for (int j = columnaMapa - 20; j < columnaMapa; j++){
+            printf( "%c", lvlDifPlayer[i][j] );
+            // evitar que se duplique el personaje, puertas, llaves, monedas en consola
+            if ( lvlDifPlayer[i][j] == 'P' || lvlDifPlayer[i][j] == 'D' || lvlDifPlayer[i][j] == 'K' || lvlDifPlayer[i][j] == 'M' ) printf(".");
+            else printf( "%c", lvlDifPlayer[i][j] );
+        }
+        printf("\n");
+    }
+}

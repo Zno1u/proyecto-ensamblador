@@ -1,20 +1,49 @@
 bits 64
 default rel
-global contarCaracterBuscado, detectarObjetoCelda, validarMovimiento, contarCeldasLibres
+global contarCaracterBuscado, detectarObjetoCelda, validarMovimiento, contarCeldasLibres, calcularPuntaje
 
 section .text
 
 ;--------------------------------------------
 ; Funcion: contarCaracterBuscado
 ; Entradas:
-;   rdi = matriz(char **)
-;   rsi = numero de filas
-;   rdx = caracter a buscar
+;   rcx = Dirección base de la matriz (&lvlDif[0][0])
+;   rdx = Número de filas (60)
+;   r8  = Número de columnas (61)
+;   r9  = Caracter a buscar ('M')
 ; Salida:
 ;   rax = total de concidencias encontradas
 ;---------------------------------------------
 
-;contarCaracteres:
+; contarCaracteres:
+;     ;Calcular el total de elementos (3660)
+;     mov rax, rdx
+;     imul rax, r8
+
+;     ;Inicializamos el contador
+;     xor r10, r10
+;     xor r11, r11
+
+;     .ciclo_lectura:
+;         cmp r11, rax
+;         jge .fin_funcion
+
+;         mov r12b, byte [rcx + rax]
+
+;         cmp r12b, r9b
+;         jne .siguiente
+
+;         inc r10
+    
+;     .siguiente:
+;         inc r11
+;         jmp .ciclo_lectura
+
+;     .fin_funcion:
+;         mov rax, r10
+;         ret
+
+
 ;---------------------------------------------
 ;Función: detectar objeto en una celda
 ;La cuarta función obligatoria en NASM deberá detectar si en una posición específica del
@@ -26,6 +55,24 @@ section .text
 ;La columna que se desea revisar.
 ;El carácter del objeto que se desea buscar.
 ;ret
+
+calcularPuntaje:
+;La tercera función obligatoria en NASM deberá calcular el puntaje del jugador.
+;Esta función deberá recibir desde C los datos necesarios para calcular el puntaje, por ejemplo:
+;Monedas recolectadas. 2000 puntos
+;Pasos realizados. -50 puntos
+;Niveles completados. 10000 puntos
+;El puntaje puede definirse con una fórmula sencilla. Por ejemplo, se puede dar mayor valor
+;a las monedas recolectadas y restar puntos por la cantidad de pasos realizados.
+    mul rcx, 2000   ;Multipliamos el numero de monedas por 2000
+    mul rdx, -50    ;Multiplicamos la penalización de los pasos por -50
+    mul r8, 10000   ;Multiplicamos completar el nivel por 10000
+    add rcx, rdx    ;(monedas * 2000) + (pasos * -50)
+    add rcx, r8     ;(monedas * 2000) + (pasos * -50) + (niveles * 10000)
+    div rcx, 10     ;(monedas * 2000) + (pasos * -50) + (niveles * 10000) / 10
+    mov rax, rcx    ;Movemos el resultado a rax para retornar el puntaje
+    ret
+
 
 detectarObjetoCelda:
 ;1 rcx direccion inicial del mapa (segmento)
