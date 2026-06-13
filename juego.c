@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <conio.h>
-
+#include <windows.h>
 
 // para los colores verlos aqui https://talyian.github.io/ansicolors/
 #define colorDefault "\x1b[0m"
@@ -40,6 +40,15 @@ int contarCeldasLibres(char mat[60][60], int columnasTotales, int filasTotales, 
 extern int calcularPuntaje(int monedas, int pasos, int nivel);
 
 int main(){
+
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
+    // 2. Activar las secuencias ANSI (Para que tus macros de colores funcionen en Windows)
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hOut, &dwMode);
+    SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     printf("\x1b[?25l"); // quitar cursor de la pantalla  (sale como un bloque blanco y se ve feo)
 
     struct Personaje p = {2,2};
