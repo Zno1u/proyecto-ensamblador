@@ -5,6 +5,25 @@
 #include <stdlib.h>
 #include <conio.h>
 
+
+// para los colores verlos aqui https://talyian.github.io/ansicolors/
+#define colorDefault "\x1b[0m"
+#define colorPared "\x1b[38;5;45m"
+#define colorFondo "\x1b[38;5;153m"
+#define colorMoneda "\x1b[38;5;220m" //48 color fondo, 38 color letra
+#define colorPersonaje "\x1b[48;5;225m\x1b[38;5;218m"
+#define colorPuerta "\x1b[48;2;64;36;0m\x1b[38;5;11m"
+#define colorLlave "\x1b[48;5;158m\x1b[38;5;2m"
+
+
+//simbolos de la tabla ascii https://elcodigoascii.com.ar/codigos-ascii-extendidos/simbolo-copyright-derecho-autor-codigo-ascii-184.html
+#define simboloPared "█"
+#define simboloFondo "░"
+#define simboloPersonaje "P"
+#define simboloMoneda "©"
+#define simboloPuerta "≡"
+#define simboloLlave "┼"
+
 struct Personaje {
     int filaPersonaje;
     int columnaPersonaje;
@@ -18,6 +37,8 @@ void imprimirMapa(char mapa[60][60], struct Personaje *p);
 extern int calcularPuntaje(int monedas, int pasos, int nivel);
 
 int main(){
+    printf("\x1b[?25l"); // quitar cursor de la pantalla  (sale como un bloque blanco y se ve feo)
+
     struct Personaje p = {2,2};
     int cnt = contarCaracterBuscado(lvlDif, 60, 60, 'M');
     bool ganado = false;
@@ -133,17 +154,65 @@ void imprimirMapa(char mapa[60][60], struct Personaje *p){
     int filaMapa = (p->filaPersonaje < 20 ? 20 : (p->filaPersonaje < 40 ? 40 : 60));
     int columnaMapa = (p->columnaPersonaje < 20 ? 20 : (p->columnaPersonaje < 40 ? 40 : 60));
 
-    // test para dibujar de 10 en 10 [20,30,40,50,60]
+    // dibujar de 10 en 10 [20,30,40,50,60]
     // int filaMapa = (p->filaPersonaje < 20 ? 20 : (p->filaPersonaje < 30 ? 30 : (p->filaPersonaje < 40 ? 40 : (p->filaPersonaje < 50 ? 50 : 60))));
     // int columnaMapa = (p->columnaPersonaje < 20 ? 20 : (p->columnaPersonaje < 30 ? 30 : (p->columnaPersonaje < 40 ? 40 : (p->columnaPersonaje < 50 ? 50 : 60))));
 
 
     for (int i = filaMapa - 20; i < filaMapa; i++){
         for (int j = columnaMapa - 20; j < columnaMapa; j++){
-            printf( "%c", lvlDifPlayer[i][j] );
-            // evitar que se duplique el personaje, puertas, llaves, monedas en consola
-            if ( lvlDifPlayer[i][j] == 'P' || lvlDifPlayer[i][j] == 'D' || lvlDifPlayer[i][j] == 'K' || lvlDifPlayer[i][j] == 'M' ) printf(".");
-            else printf( "%c", lvlDifPlayer[i][j] );
+            switch  (lvlDifPlayer[i][j]){
+                case '#': // si es pared (o #)
+                    printf( "%s%s%s", colorPared, simboloPared, colorDefault ); // imprimir color, simbolo, y regresar al color default 
+                    break;
+                
+                case '.': // si es fondo (o .)
+                    printf( "%s%s%s", colorFondo, simboloFondo, colorDefault );  // imprimir color, simbolo, y regresar al color default
+                    break;
+                
+                default: // otra cosa
+
+                    switch (lvlDifPlayer[i][j]){
+                        case 'P':
+                            printf( "%s%s%s", colorPersonaje, simboloPersonaje, colorDefault ); 
+                            break;
+    
+                        case 'M': 
+                            printf( "%s%s%s", colorMoneda, simboloMoneda, colorDefault );
+                            break;
+    
+                        case 'K': 
+                            printf( "%s%s%s", colorLlave, simboloLlave, colorDefault );
+                            break;
+    
+                        case 'D': 
+                            printf( "%s%s%s", colorPuerta, simboloPuerta, colorDefault );
+                            break;
+        
+                        default:
+                            printf( "%c", lvlDifPlayer[i][j] );
+                            break;
+                    }
+                break;
+            }
+
+            if ( lvlDifPlayer[i][j] == 'P' || lvlDifPlayer[i][j] == 'D' || lvlDifPlayer[i][j] == 'K' || lvlDifPlayer[i][j] == 'M' ) 
+                printf( "%s%s%s", colorFondo, simboloFondo, colorDefault );
+            else {
+                switch  (lvlDifPlayer[i][j]){
+                    case '#': // si es pared (o #)
+                        printf( "%s%s%s", colorPared, simboloPared, colorDefault ); // imprimir color, simbolo, y regresar al color default 
+                        break;
+                    
+                    case '.': // si es fondo (o .)
+                        printf( "%s%s%s", colorFondo, simboloFondo, colorDefault );  // imprimir color, simbolo, y regresar al color default
+                        break;
+                    
+                    default: // otra cosa
+                        printf( "%c", lvlDifPlayer[i][j] );
+                        break;
+                }
+            }
         }
         printf("\n");
     }
