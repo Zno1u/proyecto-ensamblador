@@ -34,6 +34,9 @@ void intercambiar(int x1, int y1, int x2, int y2, char mat[60][60]);
 int contarCaracterBuscado(char mat[60][60], int columnas, int filas, char objetivo);
 int validarMovimiento(char mat[60][60], int columnasTotales,int filas, int columnas); 
 void imprimirMapa(char mapa[60][60], struct Personaje *p);
+
+int contarCeldasLibres(char mat[60][60], int columnasTotales, int filasTotales, int filaPersonaje, int columnaPersonaje, int direccion);
+
 extern int calcularPuntaje(int monedas, int pasos, int nivel);
 
 int main(){
@@ -63,53 +66,111 @@ void validarWASD(char letra, struct Personaje *p){
     
     static int filaMapa = 20;
     static int columnaMapa = 20;
+    
+    static int celdasLibres = 0;
+    static char letraPulsada = ' ';
 
-    switch (letra)
-    {
-    // validar movimientos dependiendo del caso
-    // A - columnaPersonaje-1 (moverse izq)
-    // S - filaPersonaje+1 (moverse abajo)
-    // D - columnaPersonaje+1 (moverse derecha)
-    // W - filaPersonaje-1 (moverse arriba)
-    // dsps de validar que sea valido, hacer el movimiento en el mapa correspondiente,
-    // actualizar valores y cambiar flag.
-    case 'A':
-        if (p->columnaPersonaje > 1  && columnaMapa >= 0){
-            if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1) == 1){
+    if (letraPulsada == letra && celdasLibres>0){
+        switch (letra){
+            case 'A':
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje-1, lvlDifPlayer);
                 p->columnaPersonaje--;
                 movimiento = true;
-            } 
-        }
-        break;
-    case 'S':
-        if (p->filaPersonaje < 58  && filaMapa <= 60){
-            if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje) == 1){
+                celdasLibres--;
+                printf("cambio desde celdasLibres %d\n", celdasLibres);
+                break;
+
+            case 'S':
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje+1, p->columnaPersonaje, lvlDifPlayer);
                 p->filaPersonaje++;
                 movimiento = true;
-            } 
-        }
-        break;
-    case 'D':
-        if (p->columnaPersonaje < 58 && columnaMapa <= 60){
-            if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1) == 1){
+                celdasLibres--;
+                printf("cambio desde celdasLibres %d\n", celdasLibres);
+                break;
+
+            case 'D':
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje+1, lvlDifPlayer);
                 p->columnaPersonaje++;
                 movimiento = true;
-            } 
-        }
-        break;
-    case 'W':
-        if (p->filaPersonaje > 1  && filaMapa >= 0){
-            if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje) == 1){
+                celdasLibres--;
+                printf("cambio desde celdasLibres %d\n", celdasLibres);
+                break;
+
+            case 'W':
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje-1, p->columnaPersonaje, lvlDifPlayer);
                 p->filaPersonaje--;
                 movimiento = true;
-            } 
+                celdasLibres--;
+                printf("cambio desde celdasLibres %d\n", celdasLibres);
+                break;
+            }
+    } else {
+        switch (letra)
+        {
+        // validar movimientos dependiendo del caso
+        // A - columnaPersonaje-1 (moverse izq)
+        // S - filaPersonaje+1 (moverse abajo)
+        // D - columnaPersonaje+1 (moverse derecha)
+        // W - filaPersonaje-1 (moverse arriba)
+        // dsps de validar que sea valido, hacer el movimiento en el mapa correspondiente,
+        // actualizar valores y cambiar flag.
+            case 'A':
+                if (p->columnaPersonaje > 1  && columnaMapa >= 0){
+                    if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1) == 1){
+                        //validar movimiento, si es valido, hacer el intercambio
+                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje-1, lvlDifPlayer);
+                        
+                        //actualizar valores del personaje
+                        p->columnaPersonaje--;
+                        
+                        //flag para ver si se realizo un movimiento
+                        movimiento = true;
+    
+                        celdasLibres = contarCeldasLibres(lvlDifPlayer, 60, 60, p->filaPersonaje, p->columnaPersonaje, 2);
+                        letraPulsada = 'A';
+    
+                    } 
+                }
+                break;
+            case 'S':
+                if (p->filaPersonaje < 58  && filaMapa <= 60){
+                    if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje) == 1){
+                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje+1, p->columnaPersonaje, lvlDifPlayer);
+                        p->filaPersonaje++;
+                        movimiento = true;
+    
+                        celdasLibres = contarCeldasLibres(lvlDifPlayer, 60, 60, p->filaPersonaje, p->columnaPersonaje, 3);
+                        letraPulsada = 'S';
+                    } 
+                }
+                break;
+            case 'D':
+                if (p->columnaPersonaje < 58 && columnaMapa <= 60){
+                    if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1) == 1){
+                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje+1, lvlDifPlayer);
+                        p->columnaPersonaje++;
+                        movimiento = true;
+    
+                        celdasLibres = contarCeldasLibres(lvlDifPlayer, 60, 60, p->filaPersonaje, p->columnaPersonaje, 1);
+                        letraPulsada = 'D';
+                    } 
+                }
+                break;
+            case 'W':
+                if (p->filaPersonaje > 1  && filaMapa >= 0){
+                    if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje) == 1){
+                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje-1, p->columnaPersonaje, lvlDifPlayer);
+                        p->filaPersonaje--;
+                        movimiento = true;
+                        
+                        celdasLibres = contarCeldasLibres(lvlDifPlayer, 60, 60, p->filaPersonaje, p->columnaPersonaje, 4);
+                        letraPulsada = 'W';
+                    } 
+                }
+                break;
         }
-        break;
     }
+
 
     if (movimiento){
         system("cls"); // limpiarr pantalla sol osi hay movimientos nuevos
