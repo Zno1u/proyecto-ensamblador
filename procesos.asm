@@ -74,10 +74,7 @@ calcularPuntaje:
     mov rax, rcx ;dividendo en rax
     cqo         ; extiende el signo de rax a rdx:rax (para poder hacer idiv)
     mov r9, 10
-    idiv r9
-    
-    ; div rcx, 10     ;(monedas * 2000) + (pasos * -50) + (niveles * 10000) / 10
-    ; mov rax, rcx    ;Movemos el resultado a rax para retornar el puntaje
+    idiv r9 ; rax = rax / 10, resultado final del puntaje
     ret
 
 
