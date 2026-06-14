@@ -43,19 +43,6 @@ contarCaracterBuscado:
         mov rax, r10
         ret
 
-
-;---------------------------------------------
-;Función: detectar objeto en una celda
-;La cuarta función obligatoria en NASM deberá detectar si en una posición específica del
-;mapa existe un determinado objeto.
-;Esta función deberá recibir desde C:
-;La dirección inicial del mapa.
-;El número de columnas del mapa.
-;La fila que se desea revisar.
-;La columna que se desea revisar.
-;El carácter del objeto que se desea buscar.
-;ret
-
 calcularPuntaje:
 ;La tercera función obligatoria en NASM deberá calcular el puntaje del jugador.
 ;Esta función deberá recibir desde C los datos necesarios para calcular el puntaje, por ejemplo:
