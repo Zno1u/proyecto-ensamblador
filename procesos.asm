@@ -83,7 +83,6 @@ detectarObjetoCelda:
 ;2 rdx numero de columnas del mapa
 ;ulimos parametros, FILA-A-REVISAR r8d COLUMNA-A-REVISAR r9d
 ;PILA rsp+40, CARACTER-A-COMPARAR 
-;PILA rsp + 48 RETORNAR UNO O CERO
     
     ;1. Encontrar el caracter que esta en [FILA][COLUMNA]
     ;base + (i · columnas + j) · tamaño
@@ -99,10 +98,10 @@ detectarObjetoCelda:
     ;2. COMPARAR, caracter con posicion
     cmp r11b,r12b
     je .igual
-    mov word [rsp+48], 0
+    mov eax , 0
     jmp .salir
     .igual:
-        mov word [rsp+48], 1
+        mov eax, 1
     .salir:
     ;3. RETORNAR
     ret

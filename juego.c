@@ -24,9 +24,12 @@
 #define simboloPuerta "≡"
 #define simboloLlave "┼"
 
+int monedasTotalesNivel = 0;
 struct Personaje {
     int filaPersonaje;
     int columnaPersonaje;
+    int monedasRecolectadas;
+    bool llaveRecolectada;
 };
 
 void validarWASD(char, struct Personaje*);
@@ -35,8 +38,8 @@ int contarCaracterBuscado(char mat[60][60], int columnas, int filas, char objeti
 int validarMovimiento(char mat[60][60], int columnasTotales,int filas, int columnas); 
 void imprimirMapa(char mapa[60][60], struct Personaje *p);
 
-int contarCeldasLibres(char mat[60][60], int columnasTotales, int filasTotales, int filaPersonaje, int columnaPersonaje, int direccion);
-
+extern int contarCeldasLibres(char mat[60][60], int columnasTotales, int filasTotales, int filaPersonaje, int columnaPersonaje, int direccion);
+extern int detectarObjetoCelda(char mapa[60][60], int columnas, int fila_revisar, int columna_revisar, char objeto_comparar);
 extern int calcularPuntaje(int monedas, int pasos, int nivel);
 
 int main(){
@@ -51,8 +54,8 @@ int main(){
     SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     printf("\x1b[?25l"); // quitar cursor de la pantalla  (sale como un bloque blanco y se ve feo)
 
-    struct Personaje p = {2,2};
-    int cnt = contarCaracterBuscado(lvlDif, 60, 60, 'M');
+    struct Personaje p = {2,2,0,0};
+    monedasTotalesNivel = contarCaracterBuscado(lvlDif, 60, 60, 'M');
     bool ganado = false;
     do {
         char letra = ' ';
@@ -82,35 +85,62 @@ void validarWASD(char letra, struct Personaje *p){
     if (letraPulsada == letra && celdasLibres>0){
         switch (letra){
             case 'A':
+            
+                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
+                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
+                if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'D') == 1)
+                {
+                    return;
+                }
+                
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje-1, lvlDifPlayer);
                 p->columnaPersonaje--;
                 movimiento = true;
                 celdasLibres--;
-                printf("cambio desde celdasLibres %d\n", celdasLibres);
+
+
                 break;
 
             case 'S':
+                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
+                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
+                if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
+                {
+                    return;
+                }
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje+1, p->columnaPersonaje, lvlDifPlayer);
                 p->filaPersonaje++;
                 movimiento = true;
                 celdasLibres--;
-                printf("cambio desde celdasLibres %d\n", celdasLibres);
+               
                 break;
 
             case 'D':
+                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
+                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
+                if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
+                {
+                    return;
+                }
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje+1, lvlDifPlayer);
                 p->columnaPersonaje++;
                 movimiento = true;
                 celdasLibres--;
-                printf("cambio desde celdasLibres %d\n", celdasLibres);
+               
                 break;
 
             case 'W':
+                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
+                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
+                if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
+                {
+                    return;
+                }
                 intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje-1, p->columnaPersonaje, lvlDifPlayer);
                 p->filaPersonaje--;
                 movimiento = true;
                 celdasLibres--;
-                printf("cambio desde celdasLibres %d\n", celdasLibres);
+               
                 break;
             }
     } else {
@@ -126,6 +156,14 @@ void validarWASD(char letra, struct Personaje *p){
             case 'A':
                 if (p->columnaPersonaje > 1  && columnaMapa >= 0){
                     if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1) == 1){
+                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
+                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
+                        if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
+                        {
+                            return;
+                        }
+                        
+                        
                         //validar movimiento, si es valido, hacer el intercambio
                         intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje-1, lvlDifPlayer);
                         
@@ -144,6 +182,12 @@ void validarWASD(char letra, struct Personaje *p){
             case 'S':
                 if (p->filaPersonaje < 58  && filaMapa <= 60){
                     if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje) == 1){
+                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
+                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
+                        if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
+                        {
+                            return;
+                        }
                         intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje+1, p->columnaPersonaje, lvlDifPlayer);
                         p->filaPersonaje++;
                         movimiento = true;
@@ -156,6 +200,12 @@ void validarWASD(char letra, struct Personaje *p){
             case 'D':
                 if (p->columnaPersonaje < 58 && columnaMapa <= 60){
                     if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1) == 1){
+                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
+                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
+                        if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
+                        {
+                            return;
+                        }
                         intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje+1, lvlDifPlayer);
                         p->columnaPersonaje++;
                         movimiento = true;
@@ -168,6 +218,12 @@ void validarWASD(char letra, struct Personaje *p){
             case 'W':
                 if (p->filaPersonaje > 1  && filaMapa >= 0){
                     if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje) == 1){
+                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
+                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
+                        if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
+                        {
+                            return;
+                        }
                         intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje-1, p->columnaPersonaje, lvlDifPlayer);
                         p->filaPersonaje--;
                         movimiento = true;
@@ -184,6 +240,9 @@ void validarWASD(char letra, struct Personaje *p){
     if (movimiento){
         system("cls"); // limpiarr pantalla sol osi hay movimientos nuevos
         imprimirMapa(lvlDifPlayer, p);
+        printf("cambio desde celdasLibres %d\n", celdasLibres);
+        printf("Monedas recolectadas: %d / %d\n", p->monedasRecolectadas, monedasTotalesNivel);
+        printf("Llave recolectada: %d\n", p->llaveRecolectada);
     }
 
     return;
@@ -192,7 +251,7 @@ void validarWASD(char letra, struct Personaje *p){
 void intercambiar(int x1, int y1, int x2, int y2, char mat1[60][60]){
     char temp = mat1[x2][y2];
     mat1[x2][y2] = mat1[x1][y1];
-    mat1[x1][y1] = temp;
+    mat1[x1][y1] = '.';
 }
 
 // void imprimir20(int nivel, char mapa[][], int filaMapa, int columnaMapa){
