@@ -1,252 +1,21 @@
 #include <stdio.h>
-#include "mapas.h"
+#include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include <stdlib.h>
 #include <conio.h>
+#include <string.h>
 #include <windows.h>
+#include "juego.h"
 
-// para los colores verlos aqui https://talyian.github.io/ansicolors/
-#define colorDefault "\x1b[0m"
-#define colorPared "\x1b[38;5;45m"
-#define colorFondo "\x1b[38;5;153m"
-#define colorMoneda "\x1b[38;5;220m" //48 color fondo, 38 color letra
-#define colorPersonaje "\x1b[48;5;225m\x1b[38;5;218m"
-#define colorPuerta "\x1b[48;2;64;36;0m\x1b[38;5;11m"
-#define colorLlave "\x1b[48;5;158m\x1b[38;5;2m"
-
-
-//simbolos de la tabla ascii https://elcodigoascii.com.ar/codigos-ascii-extendidos/simbolo-copyright-derecho-autor-codigo-ascii-184.html
-#define simboloPared "█"
-#define simboloFondo "░"
-#define simboloPersonaje "P"
-#define simboloMoneda "©"
-#define simboloPuerta "≡"
-#define simboloLlave "┼"
-
-int monedasTotalesNivel = 0;
-struct Personaje {
-    int filaPersonaje;
-    int columnaPersonaje;
-    int monedasRecolectadas;
-    bool llaveRecolectada;
-};
-
-void validarWASD(char, struct Personaje*);
-void intercambiar(int x1, int y1, int x2, int y2, char mat[60][60]);
-int contarCaracterBuscado(char mat[60][60], int columnas, int filas, char objetivo);
-int validarMovimiento(char mat[60][60], int columnasTotales,int filas, int columnas); 
-void imprimirMapa(char mapa[60][60], struct Personaje *p);
-
-extern int contarCeldasLibres(char mat[60][60], int columnasTotales, int filasTotales, int filaPersonaje, int columnaPersonaje, int direccion);
-extern int detectarObjetoCelda(char mapa[60][60], int columnas, int fila_revisar, int columna_revisar, char objeto_comparar);
-extern int calcularPuntaje(int monedas, int pasos, int nivel);
-
-int main(){
-
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-
-    // 2. Activar las secuencias ANSI (Para que tus macros de colores funcionen en Windows)
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD dwMode = 0;
-    GetConsoleMode(hOut, &dwMode);
-    SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-    printf("\x1b[?25l"); // quitar cursor de la pantalla  (sale como un bloque blanco y se ve feo)
-
-    struct Personaje p = {2,2,0,0};
-    monedasTotalesNivel = contarCaracterBuscado(lvlDif, 60, 60, 'M');
-    bool ganado = false;
-    do {
-        char letra = ' ';
-        letra = getch();
-        if (letra >= 'a' && letra <= 'z'){
-            letra = letra-32;
-        }
-        if (letra == 'A' || letra == 'S' || letra == 'D' || letra == 'W'){
-            validarWASD(letra, &p);
-        }
-    } while (ganado==false);
-    
-}
-
-
-void validarWASD(char letra, struct Personaje *p){
-    bool movimiento = false; 
-    // cambiar movimiento en true al hacer un movimiento valido para q cuando haya uno invalido no
-    // se redibuje el mapa de nuevo
-    
-    static int filaMapa = 20;
-    static int columnaMapa = 20;
-    
-    static int celdasLibres = 0;
-    static char letraPulsada = ' ';
-
-    if (letraPulsada == letra && celdasLibres>0){
-        switch (letra){
-            case 'A':
-            
-                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
-                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
-                if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'D') == 1)
-                {
-                    return;
-                }
-                
-                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje-1, lvlDifPlayer);
-                p->columnaPersonaje--;
-                movimiento = true;
-                celdasLibres--;
-
-
-                break;
-
-            case 'S':
-                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
-                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
-                if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
-                {
-                    return;
-                }
-                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje+1, p->columnaPersonaje, lvlDifPlayer);
-                p->filaPersonaje++;
-                movimiento = true;
-                celdasLibres--;
-               
-                break;
-
-            case 'D':
-                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
-                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
-                if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
-                {
-                    return;
-                }
-                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje+1, lvlDifPlayer);
-                p->columnaPersonaje++;
-                movimiento = true;
-                celdasLibres--;
-               
-                break;
-
-            case 'W':
-                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
-                if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
-                if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
-                {
-                    return;
-                }
-                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje-1, p->columnaPersonaje, lvlDifPlayer);
-                p->filaPersonaje--;
-                movimiento = true;
-                celdasLibres--;
-               
-                break;
-            }
-    } else {
-        switch (letra)
-        {
-        // validar movimientos dependiendo del caso
-        // A - columnaPersonaje-1 (moverse izq)
-        // S - filaPersonaje+1 (moverse abajo)
-        // D - columnaPersonaje+1 (moverse derecha)
-        // W - filaPersonaje-1 (moverse arriba)
-        // dsps de validar que sea valido, hacer el movimiento en el mapa correspondiente,
-        // actualizar valores y cambiar flag.
-            case 'A':
-                if (p->columnaPersonaje > 1  && columnaMapa >= 0){
-                    if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1) == 1){
-                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
-                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
-                        if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje-1, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
-                        {
-                            return;
-                        }
-                        
-                        
-                        //validar movimiento, si es valido, hacer el intercambio
-                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje-1, lvlDifPlayer);
-                        
-                        //actualizar valores del personaje
-                        p->columnaPersonaje--;
-                        
-                        //flag para ver si se realizo un movimiento
-                        movimiento = true;
-    
-                        celdasLibres = contarCeldasLibres(lvlDifPlayer, 60, 60, p->filaPersonaje, p->columnaPersonaje, 2);
-                        letraPulsada = 'A';
-    
-                    } 
-                }
-                break;
-            case 'S':
-                if (p->filaPersonaje < 58  && filaMapa <= 60){
-                    if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje) == 1){
-                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
-                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
-                        if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje+1, p->columnaPersonaje, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
-                        {
-                            return;
-                        }
-                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje+1, p->columnaPersonaje, lvlDifPlayer);
-                        p->filaPersonaje++;
-                        movimiento = true;
-    
-                        celdasLibres = contarCeldasLibres(lvlDifPlayer, 60, 60, p->filaPersonaje, p->columnaPersonaje, 3);
-                        letraPulsada = 'S';
-                    } 
-                }
-                break;
-            case 'D':
-                if (p->columnaPersonaje < 58 && columnaMapa <= 60){
-                    if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1) == 1){
-                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
-                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
-                        if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje, p->columnaPersonaje+1, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
-                        {
-                            return;
-                        }
-                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje+1, lvlDifPlayer);
-                        p->columnaPersonaje++;
-                        movimiento = true;
-    
-                        celdasLibres = contarCeldasLibres(lvlDifPlayer, 60, 60, p->filaPersonaje, p->columnaPersonaje, 1);
-                        letraPulsada = 'D';
-                    } 
-                }
-                break;
-            case 'W':
-                if (p->filaPersonaje > 1  && filaMapa >= 0){
-                    if (validarMovimiento(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje) == 1){
-                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'M') == 1)  p->monedasRecolectadas++; //Si es moneda, sumarMonedasRecolectadas
-                        if (detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'K') == 1)  p->llaveRecolectada = true; //Si es llave, true a llaveRecolectada
-                        if (!p->llaveRecolectada && detectarObjetoCelda(lvlDifPlayer, 60, p->filaPersonaje-1, p->columnaPersonaje, 'D') == 1) //Si la siguiente es la puerta pero no tengo llave, no intercambiar
-                        {
-                            return;
-                        }
-                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje-1, p->columnaPersonaje, lvlDifPlayer);
-                        p->filaPersonaje--;
-                        movimiento = true;
-                        
-                        celdasLibres = contarCeldasLibres(lvlDifPlayer, 60, 60, p->filaPersonaje, p->columnaPersonaje, 4);
-                        letraPulsada = 'W';
-                    } 
-                }
-                break;
-        }
-    }
-
-
-    if (movimiento){
-        system("cls"); // limpiarr pantalla sol osi hay movimientos nuevos
-        imprimirMapa(lvlDifPlayer, p);
-        printf("cambio desde celdasLibres %d\n", celdasLibres);
-        printf("Monedas recolectadas: %d / %d\n", p->monedasRecolectadas, monedasTotalesNivel);
-        printf("Llave recolectada: %d\n", p->llaveRecolectada);
-    }
-
-    return;
-}
+// Inicializacion de variables globales
+char mapaActual[60][60];
+int g_monedas = 0;
+int g_monedasRecogidas = 0;
+bool g_llaveObtenida = false;
+int g_pasos = 0;
+int g_puntaje = 0;
+int g_nivel = 1;
+bool g_ganado = false;
 
 void intercambiar(int x1, int y1, int x2, int y2, char mat1[60][60]){
     char temp = mat1[x2][y2];
@@ -254,95 +23,294 @@ void intercambiar(int x1, int y1, int x2, int y2, char mat1[60][60]){
     mat1[x1][y1] = '.';
 }
 
-// void imprimir20(int nivel, char mapa[][], int filaMapa, int columnaMapa){
-//     switch (nivel) {
-//     case 1:
-//         system("cls");
-//         for (int k = j-20; k<j; k++){
-//             for (int l = i-20; l<i; l++){
-//                 printf( "%c", mapa[k][l] );
-//                 if ( mapa[k][l] == 'P' || mapa[k][l] == 'D' || mapa[k][l] == 'K' || mapa[k][l] == 'M' ) printf(".");
-//                 else printf( "%c", mapa[k][l] );
-//             }
-//             printf("\n");
-//         }
-//         break;
-        
-//     case 2:
-//         break;
-        
-//     case 3:
-//         break;
-        
-//     }
-// }
+void validarWASD(char letra, struct Personaje *p){
+    bool movimiento = false; 
+    static int filaMapa = 20;
+    static int columnaMapa = 20;
+    static int celdasLibres = 0;
+    static char letraPulsada = ' ';
+
+    if (letraPulsada == letra && celdasLibres > 0){
+        switch (letra){
+            case 'A':
+                // Salida 
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje-1, 'E') == 1) {
+                    g_ganado = true;
+                    imprimirPantallaVictoria();
+                    return;
+                }
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje-1, 'M') == 1)  g_monedasRecogidas++;
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje-1, 'K') == 1)  g_llaveObtenida = true;
+                if (!g_llaveObtenida && detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje-1, 'D') == 1) return;
+                
+                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje-1, mapaActual);
+                p->columnaPersonaje--;
+                movimiento = true;
+                celdasLibres--;
+                break;
+                
+            case 'S':
+                // Salida 
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje+1, p->columnaPersonaje, 'E') == 1) {
+                    g_ganado = true;
+                    imprimirPantallaVictoria();
+                    return;
+                }
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje+1, p->columnaPersonaje, 'M') == 1)  g_monedasRecogidas++;
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje+1, p->columnaPersonaje, 'K') == 1)  g_llaveObtenida = true;
+                if (!g_llaveObtenida && detectarObjetoCelda(mapaActual, 60, p->filaPersonaje+1, p->columnaPersonaje, 'D') == 1) return;
+                
+                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje+1, p->columnaPersonaje, mapaActual);
+                p->filaPersonaje++;
+                movimiento = true;
+                celdasLibres--;
+                break;
+                
+            case 'D':
+                // Salida 
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje+1, 'E') == 1) {
+                    g_ganado = true;
+                    imprimirPantallaVictoria();
+                    return;
+                }
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje+1, 'M') == 1)  g_monedasRecogidas++;
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje+1, 'K') == 1)  g_llaveObtenida = true;
+                if (!g_llaveObtenida && detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje+1, 'D') == 1) return;
+                
+                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje+1, mapaActual);
+                p->columnaPersonaje++;
+                movimiento = true;
+                celdasLibres--;
+                break;
+                
+            case 'W':
+                // Salida 
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje-1, p->columnaPersonaje, 'E') == 1) {
+                    g_ganado = true;
+                    imprimirPantallaVictoria();
+                    return;
+                }
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje-1, p->columnaPersonaje, 'M') == 1)  g_monedasRecogidas++;
+                if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje-1, p->columnaPersonaje, 'K') == 1)  g_llaveObtenida = true;
+                if (!g_llaveObtenida && detectarObjetoCelda(mapaActual, 60, p->filaPersonaje-1, p->columnaPersonaje, 'D') == 1) return;
+                
+                intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje-1, p->columnaPersonaje, mapaActual);
+                p->filaPersonaje--;
+                movimiento = true;
+                celdasLibres--;
+                break;
+            }
+    } else {
+        switch (letra)
+        {
+            case 'A':
+                if (p->columnaPersonaje > 1 && columnaMapa >= 0){
+                    if (validarMovimiento(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje-1) == 1){
+                        
+                        // Salida 
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje-1, 'E') == 1) {
+                            g_ganado = true;
+                            imprimirPantallaVictoria();
+                            return;
+                        }
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje-1, 'M') == 1)  g_monedasRecogidas++;
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje-1, 'K') == 1)  g_llaveObtenida = true;
+                        if (!g_llaveObtenida && detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje-1, 'D') == 1) return;
+                        
+                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje-1, mapaActual);
+                        p->columnaPersonaje--;
+                        movimiento = true;
+                        celdasLibres = contarCeldasLibres(mapaActual, 60, 60, p->filaPersonaje, p->columnaPersonaje, 2);
+                        letraPulsada = 'A';
+                    } 
+                }
+                break;
+                
+            case 'S':
+                if (p->filaPersonaje < 58 && filaMapa <= 60){
+                    if (validarMovimiento(mapaActual, 60, p->filaPersonaje+1, p->columnaPersonaje) == 1){
+                        
+                        // Salida 
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje+1, p->columnaPersonaje, 'E') == 1) {
+                            g_ganado = true;
+                            imprimirPantallaVictoria();
+                            return;
+                        }
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje+1, p->columnaPersonaje, 'M') == 1)  g_monedasRecogidas++;
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje+1, p->columnaPersonaje, 'K') == 1)  g_llaveObtenida = true;
+                        if (!g_llaveObtenida && detectarObjetoCelda(mapaActual, 60, p->filaPersonaje+1, p->columnaPersonaje, 'D') == 1) return;
+                        
+                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje+1, p->columnaPersonaje, mapaActual);
+                        p->filaPersonaje++;
+                        movimiento = true;
+                        celdasLibres = contarCeldasLibres(mapaActual, 60, 60, p->filaPersonaje, p->columnaPersonaje, 3);
+                        letraPulsada = 'S';
+                    } 
+                }
+                break;
+                
+            case 'D':
+                if (p->columnaPersonaje < 58 && columnaMapa <= 60){
+                    if (validarMovimiento(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje+1) == 1){
+                        
+                        // Salida 
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje+1, 'E') == 1) {
+                            g_ganado = true;
+                            imprimirPantallaVictoria();
+                            return;
+                        }
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje+1, 'M') == 1)  g_monedasRecogidas++;
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje+1, 'K') == 1)  g_llaveObtenida = true;
+                        if (!g_llaveObtenida && detectarObjetoCelda(mapaActual, 60, p->filaPersonaje, p->columnaPersonaje+1, 'D') == 1) return;
+                        
+                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje, p->columnaPersonaje+1, mapaActual);
+                        p->columnaPersonaje++;
+                        movimiento = true;
+                        celdasLibres = contarCeldasLibres(mapaActual, 60, 60, p->filaPersonaje, p->columnaPersonaje, 1);
+                        letraPulsada = 'D';
+                    } 
+                }
+                break;
+                
+            case 'W':
+                if (p->filaPersonaje > 1 && filaMapa >= 0){
+                    if (validarMovimiento(mapaActual, 60, p->filaPersonaje-1, p->columnaPersonaje) == 1){
+                        
+                        // Salida 
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje-1, p->columnaPersonaje, 'E') == 1) {
+                            g_ganado = true;
+                            imprimirPantallaVictoria();
+                            return;
+                        }
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje-1, p->columnaPersonaje, 'M') == 1)  g_monedasRecogidas++;
+                        if (detectarObjetoCelda(mapaActual, 60, p->filaPersonaje-1, p->columnaPersonaje, 'K') == 1)  g_llaveObtenida = true;
+                        if (!g_llaveObtenida && detectarObjetoCelda(mapaActual, 60, p->filaPersonaje-1, p->columnaPersonaje, 'D') == 1) return;
+                        
+                        intercambiar(p->filaPersonaje, p->columnaPersonaje, p->filaPersonaje-1, p->columnaPersonaje, mapaActual);
+                        p->filaPersonaje--;
+                        movimiento = true;
+                        celdasLibres = contarCeldasLibres(mapaActual, 60, 60, p->filaPersonaje, p->columnaPersonaje, 4);
+                        letraPulsada = 'W';
+                    } 
+                }
+                break;
+        }
+    }
+
+    if (movimiento){
+        g_pasos++;
+        system("cls"); 
+        mostrarInterfaz();
+        imprimirMapa(mapaActual, p);
+        printf("cambio desde celdasLibres %d\n", celdasLibres);
+    }
+}
 
 void imprimirMapa(char mapa[60][60], struct Personaje *p){
-    // dibujar de 20 en 20 [20,40,60]
-    //dependiendo en donde se encuentre el jugador, cambia las filas a dibujar
     int filaMapa = (p->filaPersonaje < 20 ? 20 : (p->filaPersonaje < 40 ? 40 : 60));
     int columnaMapa = (p->columnaPersonaje < 20 ? 20 : (p->columnaPersonaje < 40 ? 40 : 60));
 
-    // dibujar de 10 en 10 [20,30,40,50,60]
-    // int filaMapa = (p->filaPersonaje < 20 ? 20 : (p->filaPersonaje < 30 ? 30 : (p->filaPersonaje < 40 ? 40 : (p->filaPersonaje < 50 ? 50 : 60))));
-    // int columnaMapa = (p->columnaPersonaje < 20 ? 20 : (p->columnaPersonaje < 30 ? 30 : (p->columnaPersonaje < 40 ? 40 : (p->columnaPersonaje < 50 ? 50 : 60))));
-
-
     for (int i = filaMapa - 20; i < filaMapa; i++){
         for (int j = columnaMapa - 20; j < columnaMapa; j++){
-            switch  (lvlDifPlayer[i][j]){
-                case '#': // si es pared (o #)
-                    printf( "%s%s%s", colorPared, simboloPared, colorDefault ); // imprimir color, simbolo, y regresar al color default 
+            switch  (mapaActual[i][j]){
+                case '#': 
+                    printf( "%s%s%s", colorPared, simboloPared, colorDefault ); 
                     break;
-                
-                case '.': // si es fondo (o .)
-                    printf( "%s%s%s", colorFondo, simboloFondo, colorDefault );  // imprimir color, simbolo, y regresar al color default
+                case '.': 
+                    printf( "%s%s%s", colorFondo, simboloFondo, colorDefault );  
                     break;
-                
-                default: // otra cosa
-
-                    switch (lvlDifPlayer[i][j]){
-                        case 'P':
-                            printf( "%s%s%s", colorPersonaje, simboloPersonaje, colorDefault ); 
-                            break;
-    
-                        case 'M': 
-                            printf( "%s%s%s", colorMoneda, simboloMoneda, colorDefault );
-                            break;
-    
-                        case 'K': 
-                            printf( "%s%s%s", colorLlave, simboloLlave, colorDefault );
-                            break;
-    
-                        case 'D': 
-                            printf( "%s%s%s", colorPuerta, simboloPuerta, colorDefault );
-                            break;
-        
-                        default:
-                            printf( "%c", lvlDifPlayer[i][j] );
-                            break;
+                default: 
+                    switch (mapaActual[i][j]){
+                        case 'P': printf( "%s%s%s", colorPersonaje, simboloPersonaje, colorDefault ); break;
+                        case 'M': printf( "%s%s%s", colorMoneda, simboloMoneda, colorDefault ); break;
+                        case 'K': printf( "%s%s%s", colorLlave, simboloLlave, colorDefault ); break;
+                        case 'D': printf( "%s%s%s", colorPuerta, simboloPuerta, colorDefault ); break;
+                        default:  printf( "%c", mapaActual[i][j] ); break;
                     }
                 break;
             }
 
-            if ( lvlDifPlayer[i][j] == 'P' || lvlDifPlayer[i][j] == 'D' || lvlDifPlayer[i][j] == 'K' || lvlDifPlayer[i][j] == 'M' ) 
+            if ( mapaActual[i][j] == 'P' || mapaActual[i][j] == 'D' || mapaActual[i][j] == 'K' || mapaActual[i][j] == 'M' ) 
                 printf( "%s%s%s", colorFondo, simboloFondo, colorDefault );
             else {
-                switch  (lvlDifPlayer[i][j]){
-                    case '#': // si es pared (o #)
-                        printf( "%s%s%s", colorPared, simboloPared, colorDefault ); // imprimir color, simbolo, y regresar al color default 
-                        break;
-                    
-                    case '.': // si es fondo (o .)
-                        printf( "%s%s%s", colorFondo, simboloFondo, colorDefault );  // imprimir color, simbolo, y regresar al color default
-                        break;
-                    
-                    default: // otra cosa
-                        printf( "%c", lvlDifPlayer[i][j] );
-                        break;
+                switch  (mapaActual[i][j]){
+                    case '#': printf( "%s%s%s", colorPared, simboloPared, colorDefault ); break;
+                    case '.': printf( "%s%s%s", colorFondo, simboloFondo, colorDefault ); break;
+                    default: printf( "%c", mapaActual[i][j] ); break;
                 }
             }
         }
         printf("\n");
     }
+}
+
+void imprimirPantallaInicio(){
+    system("cls");
+    printf("\x1b[38;5;45m"); 
+    printf("\n\n\n");
+    printf("     ==========================================\n");
+    printf("     ||                                      ||\n");
+    printf("     ||        B I E N V E N I D O   A       ||\n");
+    printf("     ||            B I T Q U E S T           ||\n");
+    printf("     ||                                      ||\n");
+    printf("     ==========================================\n");
+    printf("\x1b[0m\n");
+    printf("          Presiona cualquier tecla para iniciar...\n");
+    getch();
+}
+
+void imprimirPantallaVictoria(){
+    system("cls");
+    printf("\x1b[38;5;46m"); 
+    printf("\n\n\n");
+    printf("     ===============================================\n");
+    printf("     ||                                            ||\n");
+    printf("     ||       ! N I V E L   S U P E R A D O !      ||\n");
+    printf("     ||                                            ||\n");
+    printf("     ===============================================\n");
+    printf("\x1b[0m\n");
+    printf("   --- RESUMEN DEL NIVEL %d ---\n", g_nivel);
+    printf("   > Monedas recolectadas : %d\n", g_monedas);
+    printf("   > Pasos dados          : %d\n", g_pasos);
+    printf("   > Puntaje Final        : %d\n\n", g_puntaje);
+    printf("     Presiona cualquier tecla para continuar...\n");
+    getch();
+}
+
+void mostrarInterfaz(){
+    g_puntaje = calcularPuntaje(g_monedas, g_pasos, g_nivel);
+    g_monedas = contarCaracterBuscado(mapaActual, 60, 60, 'M');
+    if (g_puntaje < 0) g_puntaje = 0;
+
+    printf("\x1b[38;5;226m"); 
+    printf("=======================================================================\n");
+    printf(" NIVEL: %d | MONEDAS: %d | LLAVE: %s | PASOS: %d | PUNTAJE: %d \n", 
+           g_nivel, g_monedas, (g_llaveObtenida ? "OBTENIDA" : "FALTANTE"), g_pasos, g_puntaje);
+    printf("=======================================================================\n");
+    printf("\x1b[0m"); 
+}
+
+bool cargarMapaDesdeTXT(char nombreArchivo[], struct Personaje *p){
+    FILE *archivo = fopen(nombreArchivo, "r");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo: %s\n", nombreArchivo);
+        return false;
+    }
+
+    char linea[65];
+    int fila = 0;
+
+    while (fgets(linea, sizeof(linea), archivo) && fila < 60) {
+        for (int col = 0; col < 60 && linea[col] != '\n' && linea[col] != '\0'; col++) {
+            mapaActual[fila][col] = linea[col];
+            if (linea[col] == 'P') {
+                p->filaPersonaje = fila;
+                p->columnaPersonaje = col;
+            }
+        }
+        fila++;
+    }
+
+    fclose(archivo);
+    return true;
 }
