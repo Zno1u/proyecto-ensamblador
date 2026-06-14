@@ -32,6 +32,7 @@ extern int g_pasos;
 extern int g_puntaje;
 extern int g_nivel;
 extern bool g_ganado;
+extern int g_monedasRecogidas;
 
 // Prototipos de funciones en Ensamblador (NASM)
 int contarCaracterBuscado(char mat[60][60], int columnas, int filas, char objetivo);

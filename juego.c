@@ -201,8 +201,14 @@ void validarWASD(char letra, struct Personaje *p){
         g_pasos++;
         system("cls"); 
         mostrarInterfaz();
+        printf("\n");
         imprimirMapa(mapaActual, p);
-        printf("cambio desde celdasLibres %d\n", celdasLibres);
+        printf("\n");
+        printf("\x1b[38;5;226m"); 
+        printf("=======================================================================\n");
+        printf("                          CELDAS LIBRES: %d                            \n", celdasLibres);
+        printf("=======================================================================\n");
+        printf("\x1b[0m");
     }
 }
 
@@ -260,34 +266,36 @@ void imprimirPantallaInicio(){
 }
 
 void imprimirPantallaVictoria(){
+    g_puntaje = calcularPuntaje(g_monedasRecogidas, g_pasos, g_ganado);
+    if (g_puntaje < 0) g_puntaje = 0;
     system("cls");
     printf("\x1b[38;5;46m"); 
     printf("\n\n\n");
-    printf("     ===============================================\n");
-    printf("     ||                                            ||\n");
-    printf("     ||       ! N I V E L   S U P E R A D O !      ||\n");
-    printf("     ||                                            ||\n");
-    printf("     ===============================================\n");
+    printf("     ================================================\n");
+    printf("     ||                                             ||\n");
+    printf("     ||       ! N I V E L   S U P E R A D O !       ||\n");
+    printf("     ||                                             ||\n");
+    printf("     ================================================\n");
     printf("\x1b[0m\n");
     printf("   --- RESUMEN DEL NIVEL %d ---\n", g_nivel);
-    printf("   > Monedas recolectadas : %d\n", g_monedas);
+    printf("   > Monedas recolectadas : %d\n", g_monedasRecogidas);
     printf("   > Pasos dados          : %d\n", g_pasos);
     printf("   > Puntaje Final        : %d\n\n", g_puntaje);
-    printf("     Presiona cualquier tecla para continuar...\n");
-    getch();
 }
 
 void mostrarInterfaz(){
-    g_puntaje = calcularPuntaje(g_monedas, g_pasos, g_nivel);
-    g_monedas = contarCaracterBuscado(mapaActual, 60, 60, 'M');
+    g_puntaje = calcularPuntaje(g_monedasRecogidas, g_pasos, g_ganado);
+    int monedasRestantes = contarCaracterBuscado(mapaActual, 60, 60, 'M');
+    int monedasTotales = g_monedasRecogidas + monedasRestantes;
+
     if (g_puntaje < 0) g_puntaje = 0;
 
     printf("\x1b[38;5;226m"); 
     printf("=======================================================================\n");
-    printf(" NIVEL: %d | MONEDAS: %d | LLAVE: %s | PASOS: %d | PUNTAJE: %d \n", 
-           g_nivel, g_monedas, (g_llaveObtenida ? "OBTENIDA" : "FALTANTE"), g_pasos, g_puntaje);
+    printf(" NIVEL: %d | MONEDAS: %d/%d | LLAVE: %s | PASOS: %d | PUNTAJE: %d \n", 
+           g_nivel, g_monedasRecogidas, monedasTotales, (g_llaveObtenida ? "OBTENIDA" : "FALTANTE"), g_pasos, g_puntaje);
     printf("=======================================================================\n");
-    printf("\x1b[0m"); 
+    printf("\x1b[0m");
 }
 
 bool cargarMapaDesdeTXT(char nombreArchivo[], struct Personaje *p){

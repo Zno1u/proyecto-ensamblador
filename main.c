@@ -20,7 +20,6 @@ int main(){
 
     imprimirPantallaInicio();
     int opcion = 0;
-    char tutorial = ' ';
     char nombreArchivo[50]; 
     
     do {
@@ -38,50 +37,83 @@ int main(){
 
         if (opcion == 0) break;
 
-        while(getchar() != '\n'); 
+        while(getchar() != '\n'); // Limpiar el buffer
 
-        if (opcion == 1) {
-            strcpy(nombreArchivo, "nivelTutorial.txt");
-            g_nivel = 1;
-        } else if (opcion == 2) {
-            strcpy(nombreArchivo, "nivelFacil.txt");
-            g_nivel = 2;
-        } else if (opcion == 3) {
-            strcpy(nombreArchivo, "nivelMedio.txt");
-            g_nivel = 3;
-        } else if (opcion == 4) {
-            strcpy(nombreArchivo, "nivelDificil.txt");
-            g_nivel = 4;
-        } else {
-            continue; 
-        }
+        // Validar que la opcion sea correcta antes de entrar al ciclo de niveles
+        if (opcion >= 1 && opcion <= 4) {
+            int nivelActual = opcion;
 
-        struct Personaje p;
-        // Se carga el mapa desde un txt y se inicializa el personaje
-        if (cargarMapaDesdeTXT(nombreArchivo, &p)) {
-            g_monedas = 0;
-            g_llaveObtenida = false;
-            g_pasos = 0;
-            g_puntaje = 0;
-            g_ganado = false;
-
-            system("cls");
-            mostrarInterfaz();
-            imprimirMapa(mapaActual, &p);
-
-            // Bucle principal del juego
-            do {
-                char letra = getch();
-                if (letra >= 'a' && letra <= 'z'){
-                    letra = letra - 32;
+            // Bucle que permite la progresión de niveles
+            while (nivelActual <= 4) {
+                
+                // Asignar el nombre del archivo según el nivel actual
+                if (nivelActual == 1) {
+                    strcpy(nombreArchivo, "nivelTutorial.txt");
+                } else if (nivelActual == 2) {
+                    strcpy(nombreArchivo, "nivelFacil.txt");
+                } else if (nivelActual == 3) {
+                    strcpy(nombreArchivo, "nivelMedio.txt");
+                } else if (nivelActual == 4) {
+                    strcpy(nombreArchivo, "nivelDificil.txt");
                 }
-                if (letra == 'A' || letra == 'S' || letra == 'D' || letra == 'W'){
-                    validarWASD(letra, &p); 
-                }
-            } while (g_ganado == false);
+                g_nivel = nivelActual;
 
-            imprimirPantallaVictoria(); 
-        }
+                struct Personaje p;
+                
+                // Se carga el mapa desde un txt y se inicializa el personaje
+                if (cargarMapaDesdeTXT(nombreArchivo, &p)) {
+                    g_monedas = 0; 
+                    g_monedasRecogidas = 0; // Reiniciar monedas al entrar al nivel
+                    g_llaveObtenida = false;
+                    g_pasos = 0;
+                    g_puntaje = 0;
+                    g_ganado = false;
+
+                    system("cls");
+                    mostrarInterfaz();
+                    imprimirMapa(mapaActual, &p);
+
+                    // Bucle principal del juego
+                    do {
+                        char letra = getch();
+                        if (letra >= 'a' && letra <= 'z'){
+                            letra = letra - 32;
+                        }
+                        if (letra == 'A' || letra == 'S' || letra == 'D' || letra == 'W'){
+                            validarWASD(letra, &p); 
+                        }
+                    } while (g_ganado == false);
+
+                    // Mostrar el resumen de victoria
+                    imprimirPantallaVictoria(); 
+
+                    // Logica para avanzar al siguiente nivel o regresar al menu
+                    if (nivelActual < 4) {
+                        char resp;
+                        printf("     Quieres avanzar al siguiente nivel? (S/N): ");
+                        scanf(" %c", &resp);
+                        while(getchar() != '\n'); // Limpiar buffer de nuevo
+                        
+                        if (toupper(resp) == 'S') {
+                            nivelActual++;
+                        } else {
+                            break;
+                        }
+                    } else {
+                        // Si está en el nivel 4 (Dificil)
+                        printf("     Has completado el nivel mas dificil!\n");
+                        printf("     Presiona cualquier tecla para regresar al menu principal...\n");
+                        getch();
+                        break; 
+                    }
+                } else {
+                    // Si hubo un error cargando el TXT, salir del bucle de progresion
+                    printf("     Presiona cualquier tecla para regresar al menu...\n");
+                    getch();
+                    break;
+                }
+            } // Fin del while de progresion de niveles
+        } 
 
     } while (opcion != 0);
 
