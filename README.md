@@ -4,7 +4,7 @@
 
 ---
 
-## 🎮 Características del Sistema y Código
+## Características del Sistema y Código
 
 ### Mecánica del Laberinto e Interfaz Dinámica
 El juego lee mapas de **60 filas por 60 columnas** desde archivos externos `.txt` (`nivelTutorial.txt`, `nivelFacil.txt`, etc.) cargando las posiciones de los muros y entidades directo a la matriz global `mapaActual[60][60]`. 
@@ -38,7 +38,7 @@ La captura de teclado se realiza mediante la librería nativa `conio.h` de Windo
 * `juego.c`      : Motor gráfico de la ventana 20x20, llamadas a las funciones híbridas y validaciones de estados globales.
 * `juego.h`      : Encabezado con la estructura de datos `Personaje`, constantes de color ANSI, caracteres extendidos y firmas de enlace cruzado entre C y NASM.
 * `procesos.asm` : Código fuente nativo en ensamblador x86-64 para el procesamiento avanzado de arreglos bidimensionales.
-* `build.bat`    : Archivo de procesamiento por lotes para compilar todo el sistema con un solo comando en Windows.
+* `compilar.bat`    : Archivo de procesamiento por lotes para compilar todo el sistema con un solo comando en Windows.
 * `*.txt`        : Archivos de configuración de los niveles (`nivelTutorial.txt`, `nivelFacil.txt`, `nivelMedio.txt`, `nivelDificil.txt`).
 
 ---
